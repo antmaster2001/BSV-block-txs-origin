@@ -68,12 +68,15 @@ def InitBlockCheck(blockData):
 
 	print(knownOrigins)
 
-	totalFound = 0;
+	totalFound = 0
+	knownPercentages = 0
 	for key, value in knownOrigins.items():
 		totalFound += value
-		print(str(key) + ": " + str(int(value / len(allTransactionsHashes) * 100)) + "%")
+		knownPercentages += value / len(allTransactionsHashes)
+		print(str(key) + ": " + "{:.2f}".format(value / len(allTransactionsHashes) * 100) + "%")
 
 	print("totalFound: "+ str(totalFound) + " total tx found: " + str(len(allTransactionsHashes)))
+	print("knownPercentages" + str(knownPercentages))
 
 if(requests.get("https://api.whatsonchain.com/v1/bsv/main/chain/info").json()["blocks"] >= blockHeight):
 	print("Block Found :) \n \n")
