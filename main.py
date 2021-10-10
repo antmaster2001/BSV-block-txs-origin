@@ -39,8 +39,12 @@ def txHandler(txHash):
 			addToDict("None")
 
 def InitBlockCheck(blockData):
-	print(blockData)
-	allTransactionsHashes = getBlockPage(blockData["hash"], 1)
+	allTransactionsHashes = []
+	if(blockData["txcount"] < 1000 ): 
+		allTransactionsHashes = blockData["tx"]
+	else:
+		allTransactionsHashes = getBlockPage(blockData["hash"], 1)
+
 	print("Found transactions: " + str(len(allTransactionsHashes)))
 	print("Estimated time: " + str(convertSeconds(len(allTransactionsHashes) / 20 / 3)))
 	startTest = time.time()
