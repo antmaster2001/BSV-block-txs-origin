@@ -6,6 +6,15 @@ print("Give the block height of the block you want to check:")
 blockHeight = int(input())
 knownOrigins = {}
 
+def convertSeconds(seconds):
+    seconds = seconds % (24 * 3600)
+    hour = seconds // 3600
+    seconds %= 3600
+    minutes = seconds // 60
+    seconds %= 60
+      
+    return "%d:%02d:%02d" % (hour, minutes, seconds)
+
 def addToDict(key):
 	if(key in knownOrigins):
 		knownOrigins[key] = knownOrigins[key] + 1
@@ -30,8 +39,10 @@ def txHandler(txHash):
 			addToDict("None")
 
 def InitBlockCheck(blockData):
+	print(blockData)
 	allTransactionsHashes = getBlockPage(blockData["hash"], 1)
 	print("Found transactions: " + str(len(allTransactionsHashes)))
+	print("Estimated time: " + str(convertSeconds(len(allTransactionsHashes) / 20 / 3)))
 	startTest = time.time()
 	testIndex = 0
 	lastFrameTime = time.time()
@@ -61,7 +72,7 @@ def InitBlockCheck(blockData):
 	print("totalFound: "+ str(totalFound) + " total tx found: " + str(len(allTransactionsHashes)))
 
 if(requests.get("https://api.whatsonchain.com/v1/bsv/main/chain/info").json()["blocks"] >= blockHeight):
-	print("Block Found :)")
+	print("Block Found :) \n \n")
 	InitBlockCheck(requests.get("https://api.whatsonchain.com/v1/bsv/main/block/height/" + str(blockHeight)).json())
 else:
 	print("Block doesn't exist")
