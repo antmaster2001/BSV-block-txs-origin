@@ -2,11 +2,18 @@ import requests
 import time
 from itertools import zip_longest
 from tqdm import tqdm
+import pymongo
 
+# inits
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = myclient["BSV_BlockTags"]
+BSV_BlockTags = mydb["BSV_BlockTags"]
+big_stats = mydb["big_stats"]
+knownOrigins = {}
+knownBig_stats = big_stats.find_one()
 
 print("Give the block height of the block you want to check:")
 blockHeight = int(input())
-knownOrigins = {}
 
 def convertSeconds(seconds):
     seconds = seconds % (24 * 3600)
@@ -32,6 +39,20 @@ def getBlockPage(blockHash, pageId):
 def getTxData(txHash):
 	return requests.get("https://api.whatsonchain.com/v1/bsv/main/tx/hash/" + str(txHash)).json()
 
+def bigStatsBlockHandler(blockData):
+	print("knownBig_stats")
+	print(knownBig_stats)
+	if (knownBig_stats["mostTXblock"]["amount"] < blockData["txcount"]):
+		big_stats.update_one({"_id": knownBig_stats["_id"]}, {"$set":{"mostTXblock":{
+		"amount": blockData["txcount"],
+		"blockID": blockData["height"]
+	}}})
+	if (knownBig_stats["largestBlock"]["amount"] < blockData["size"]):
+		big_stats.update_one({"_id": knownBig_stats["_id"]}, {"$set":{"largestBlock":{
+		"amount": blockData["size"],
+		"blockID": blockData["height"]
+	}}})
+
 def txHandler(txHash):
 	allTransactionsData = requests.post("https://api.whatsonchain.com/v1/bsv/main/txs", json={"txids": txHash}).json()
 	for x in allTransactionsData:
@@ -50,8 +71,6 @@ def InitBlockCheck(blockData):
 
 	print("Found transactions: " + str(len(allTransactionsHashes)))
 	print("Estimated time: " + str(convertSeconds(len(allTransactionsHashes) / 20 / 2.5)))
-	startTest = time.time()
-	testIndex = 0
 	lastFrameTime = time.time()
 	for x in tqdm(group_elements(20, allTransactionsHashes)):
 		# A delta time sleep time out for the 3 queries per second WhatsOnChain rate limit
@@ -62,13 +81,8 @@ def InitBlockCheck(blockData):
 		currentTime = time.time()
 		lastFrameTime = currentTime
 		txHandler(x)
-		testIndex += 1
-		if(testIndex == 3):
-			# print("3 queries in: " + str(time.time() -startTest) + "\n\n")
-			startTest = time.time()
-			testIndex = 0
 
-
+	bigStatsBlockHandler(blockData)
 	print(knownOrigins)
 
 	totalFound = 0
