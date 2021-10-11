@@ -1,6 +1,8 @@
 import requests
 import time
 from itertools import zip_longest
+from tqdm import tqdm
+
 
 print("Give the block height of the block you want to check:")
 blockHeight = int(input())
@@ -47,22 +49,22 @@ def InitBlockCheck(blockData):
 		allTransactionsHashes.extend(getBlockPage(blockData["hash"], 1))
 
 	print("Found transactions: " + str(len(allTransactionsHashes)))
-	print("Estimated time: " + str(convertSeconds(len(allTransactionsHashes) / 20 / 3)))
+	print("Estimated time: " + str(convertSeconds(len(allTransactionsHashes) / 20 / 2.5)))
 	startTest = time.time()
 	testIndex = 0
 	lastFrameTime = time.time()
-	for x in group_elements(20, allTransactionsHashes):
+	for x in tqdm(group_elements(20, allTransactionsHashes)):
 		# A delta time sleep time out for the 3 queries per second WhatsOnChain rate limit
 		dt = time.time() - lastFrameTime
 		if(dt < 0.34):
-			print("Sleep time: " + str(0.34 - dt))
+			# print("Sleep time: " + str(0.34 - dt))
 			time.sleep(0.34 - dt)
 		currentTime = time.time()
 		lastFrameTime = currentTime
 		txHandler(x)
 		testIndex += 1
 		if(testIndex == 3):
-			print("3 queries in: " + str(time.time() -startTest) + "\n\n")
+			# print("3 queries in: " + str(time.time() -startTest) + "\n\n")
 			startTest = time.time()
 			testIndex = 0
 
