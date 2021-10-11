@@ -43,7 +43,8 @@ def InitBlockCheck(blockData):
 	if(blockData["txcount"] < 1000 ): 
 		allTransactionsHashes = blockData["tx"]
 	else:
-		allTransactionsHashes = getBlockPage(blockData["hash"], 1)
+		allTransactionsHashes = blockData["tx"]
+		allTransactionsHashes.extend(getBlockPage(blockData["hash"], 1))
 
 	print("Found transactions: " + str(len(allTransactionsHashes)))
 	print("Estimated time: " + str(convertSeconds(len(allTransactionsHashes) / 20 / 3)))
