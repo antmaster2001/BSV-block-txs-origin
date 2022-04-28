@@ -35,7 +35,7 @@ def getTxData(txHash):
 def txHandler(txHash):
 	allTransactionsData = requests.post("https://api.whatsonchain.com/v1/bsv/main/txs", json={"txids": txHash}).json()
 	for x in allTransactionsData:
-		if(x["vout"][0]["scriptPubKey"]["opReturn"] != None):
+		if("opReturn" in x["vout"][0]["scriptPubKey"]):
 			addToDict(x["vout"][0]["scriptPubKey"]["opReturn"]["type"])
 		else: 
 			addToDict("None")
